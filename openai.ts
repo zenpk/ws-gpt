@@ -54,17 +54,3 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
         console.log(e);
     }
 }
-
-type SendObject = {
-    messages: ChatCompletionRequestMessage[];
-}
-
-export function parseMessages(raw: string) {
-    try {
-        const obj: SendObject = JSON.parse(raw);
-        return obj.messages;
-    } catch (e) {
-        console.log("parse raw messages failed");
-        return [];
-    }
-}

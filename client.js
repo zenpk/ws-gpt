@@ -1,4 +1,4 @@
-const socket = new WebSocket("ws://localhost:3002");
+const socket = new WebSocket("wss://domain.com/wsgpt");
 
 socket.addEventListener("message", (event) => {
   console.log(`Message from server: ${event.data}`);
