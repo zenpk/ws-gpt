@@ -5,14 +5,14 @@ socket.addEventListener("message", (event) => {
 });
 
 socket.addEventListener("open", (event) => {
-    const sendObj = {
-        token: "",
-        messages: [
-            {
-                "role": "user",
-                "content": "hello"
-            }
-        ]
-    }
-    socket.send(JSON.stringify(sendObj));
+  const sendObj = {
+    token: "",
+    messages: [
+      {
+        role: "user",
+        content: "hello",
+      },
+    ],
+  };
+  socket.send(JSON.stringify(sendObj));
 });
