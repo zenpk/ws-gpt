@@ -1,5 +1,7 @@
+import dotenv from "dotenv";
+import axios from "axios";
 import WebSocket, {WebSocketServer} from "ws";
-import {chatGPT, parseMessages} from "./openai";
+import {chatGPT} from "./openai";
 import {emitter, eventName} from "./eventBus";
 import {ChatCompletionRequestMessage} from "openai/api";
 
@@ -8,8 +10,12 @@ wss.on("connection", (ws: WebSocket) => {
     ws.send("hello");
     ws.on("error", console.error);
     ws.on("message", async (data) => {
-        const messages = await parseMessages(data.toString());
-        await chatGPT(messages);
+        const parsed: ParsedMessage = await parseMessages(data.toString());
+        if (!parsed.ok) {
+            emitter.emit(eventName, "parse token failed");
+            return;
+        }
+        await chatGPT(parsed.messages);
     });
     emitter.on(eventName, (message: string) => {
         ws.send(message);
@@ -21,13 +27,30 @@ type RequestObject = {
     messages: ChatCompletionRequestMessage[];
 }
 
+type TokenResp = {
+    ok: boolean;
+    msg: string;
+}
+
+type ParsedMessage = {
+    ok: boolean;
+    messages: ChatCompletionRequestMessage[];
+}
+
 async function parseMessages(raw: string) {
+    dotenv.config();
     try {
         const obj: RequestObject = JSON.parse(raw);
         // simple-auth
-        return obj.messages;
+
+        const resp = await axios.post(`${process.env.URL}/token-check`, {token: obj.token});
+        const respData = resp.data as TokenResp;
+        if (!respData.ok) {
+            return {ok: false, messages: []};
+        }
+        return {ok: true, messages: obj.messages};
     } catch (e) {
         console.log("parse raw messages failed");
-        return [];
+        return {ok: false, messages: []};
     }
 }
