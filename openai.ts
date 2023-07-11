@@ -27,6 +27,7 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
       for (const payload of payloads) {
         if (payload.endsWith("[DONE]")) {
           emitter.emit(eventName, "[DONE]");
+          return;
         }
         if (payload.startsWith("data:")) {
           try {
