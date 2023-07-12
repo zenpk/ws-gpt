@@ -17,7 +17,9 @@ wss.on("connection", (ws: WebSocket) => {
       emitter.emit(eventName, "parse raw message failed");
       return;
     }
-    console.log(`client: ${parsed.messages}`); // debug
+    console.log(
+      `client: ${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
+    ); // debug
     await chatGPT(parsed.messages);
   });
   emitter.on(eventName, (message: string) => {
