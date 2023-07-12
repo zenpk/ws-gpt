@@ -12,12 +12,12 @@ wss.on("connection", (ws: WebSocket) => {
 
   ws.on("error", console.error);
   ws.on("message", async (data) => {
-    console.log(`got a message from client: ${data.toString()}`); // debug
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
       emitter.emit(eventName, "parse raw message failed");
       return;
     }
+    console.log(`client: ${parsed.messages}`); // debug
     await chatGPT(parsed.messages);
   });
   emitter.on(eventName, (message: string) => {
