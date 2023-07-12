@@ -8,14 +8,14 @@ import { ChatCompletionRequestMessage } from "openai/api";
 const wss = new WebSocketServer({ port: 3002 });
 wss.on("connection", (ws: WebSocket) => {
   // debug
-  ws.send("hello");
+  // ws.send("hello");
 
   ws.on("error", console.error);
   ws.on("message", async (data) => {
     console.log(`got a message from client: ${data.toString()}`); // debug
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
-      emitter.emit(eventName, "parse token failed");
+      emitter.emit(eventName, "parse raw message failed");
       return;
     }
     await chatGPT(parsed.messages);
@@ -45,7 +45,6 @@ async function parseMessages(raw: string) {
   try {
     const obj: RequestObject = JSON.parse(raw);
     // simple-auth
-
     const resp = await axios.post(`${process.env.URL}/token-check`, {
       token: obj.token,
     });
@@ -55,7 +54,7 @@ async function parseMessages(raw: string) {
     }
     return { ok: true, messages: obj.messages };
   } catch (e) {
-    console.log("parse raw messages failed");
+    console.log(e);
     return { ok: false, messages: [] };
   }
 }

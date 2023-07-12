@@ -34,7 +34,7 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
             const data = JSON.parse(payload.replace("data: ", ""));
             const chunk: undefined | string = data.choices[0].delta?.content;
             if (chunk) {
-              console.log(chunk);
+              // console.log(chunk);
               emitter.emit(eventName, chunk.toString());
             }
           } catch (e) {
@@ -45,7 +45,7 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
     });
 
     stream.on("end", () => {
-      console.log("end");
+      // console.log("end");
     });
 
     stream.on("error", (e: Error) => {
