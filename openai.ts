@@ -50,8 +50,10 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
 
     stream.on("error", (e: Error) => {
       console.log(e);
+      emitter.emit(eventName, JSON.stringify(e));
     });
   } catch (e) {
-    console.log(e);
+    console.log(`Caught Error: ${e}`);
+    emitter.emit(eventName, JSON.stringify(e));
   }
 }
