@@ -11,6 +11,8 @@ wss.on("connection", (ws: WebSocket) => {
   // ws.send("hello");
   ws.on("error", console.error);
 
+  setTimeout(ws.close, 180_000); // close in 3 minutes
+
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
