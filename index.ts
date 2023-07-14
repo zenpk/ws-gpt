@@ -9,8 +9,8 @@ const wss = new WebSocketServer({ port: 3002 });
 wss.on("connection", (ws: WebSocket) => {
   // debug
   // ws.send("hello");
-
   ws.on("error", console.error);
+
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
@@ -22,8 +22,14 @@ wss.on("connection", (ws: WebSocket) => {
     ); // debug
     await chatGPT(parsed.messages);
   });
-  emitter.on(eventName, (message: string) => {
+
+  function sendMessage(message: string) {
     ws.send(message);
+  }
+
+  emitter.on(eventName, sendMessage);
+  ws.on("close", () => {
+    emitter.removeListener(eventName, sendMessage);
   });
 });
 
