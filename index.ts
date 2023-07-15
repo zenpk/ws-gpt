@@ -60,6 +60,7 @@ async function parseMessages(raw: string) {
     const obj: RequestObject = JSON.parse(raw);
     // simple-auth
     const resp = await axios.post(`${process.env.URL}/token-check`, {
+      appId: process.env.APP_ID,
       token: obj.token,
     });
     const respData = resp.data as TokenResp;
