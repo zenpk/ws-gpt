@@ -2,10 +2,11 @@ import dotenv from "dotenv";
 import { Configuration, OpenAIApi } from "openai";
 import { ChatCompletionRequestMessage } from "openai/api";
 import { IncomingMessage } from "http";
+import WebSocket from "ws";
 
 export async function chatGPT(
   gptMessages: ChatCompletionRequestMessage[],
-  sendMessage: (msg: string) => void,
+  ws: WebSocket,
 ) {
   dotenv.config();
   const configuration = new Configuration({
@@ -28,7 +29,7 @@ export async function chatGPT(
       const payloads = chunk.toString().split("\n\n");
       for (const payload of payloads) {
         if (payload.endsWith("[DONE]")) {
-          sendMessage("[DONE]");
+          ws.send("[DONE]");
           return;
         }
         if (payload.startsWith("data:")) {
@@ -37,7 +38,7 @@ export async function chatGPT(
             const chunk: undefined | string = data.choices[0].delta?.content;
             if (chunk) {
               // console.log(chunk);
-              sendMessage(chunk.toString());
+              ws.send(chunk.toString());
             }
           } catch (e) {
             console.log(`Error with JSON.parse and ${payload}.\n${e}`);
@@ -52,10 +53,10 @@ export async function chatGPT(
 
     stream.on("error", (e: Error) => {
       console.log(e);
-      sendMessage(JSON.stringify(e));
+      ws.send(JSON.stringify(e));
     });
   } catch (e) {
     console.log(`Caught Error: ${e}`);
-    sendMessage(JSON.stringify(e));
+    ws.send(JSON.stringify(e));
   }
 }

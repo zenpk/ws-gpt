@@ -29,12 +29,8 @@ wss.on("connection", (ws: WebSocket) => {
     console.log(
       `client: ${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
     ); // debug
-    await chatGPT(parsed.messages, sendMessage);
+    await chatGPT(parsed.messages, ws);
   });
-
-  function sendMessage(message: string) {
-    ws.send(message);
-  }
 
   ws.on("close", () => {
     console.log("successfully closed"); // debug
