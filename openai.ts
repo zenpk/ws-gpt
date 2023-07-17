@@ -2,9 +2,11 @@ import dotenv from "dotenv";
 import { Configuration, OpenAIApi } from "openai";
 import { ChatCompletionRequestMessage } from "openai/api";
 import { IncomingMessage } from "http";
-import { emitter, eventName } from "./eventBus";
 
-export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
+export async function chatGPT(
+  gptMessages: ChatCompletionRequestMessage[],
+  sendMessage: (msg: string) => void,
+) {
   dotenv.config();
   const configuration = new Configuration({
     organization: process.env.ORG_ID,
@@ -26,7 +28,7 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
       const payloads = chunk.toString().split("\n\n");
       for (const payload of payloads) {
         if (payload.endsWith("[DONE]")) {
-          emitter.emit(eventName, "[DONE]");
+          sendMessage("[DONE]");
           return;
         }
         if (payload.startsWith("data:")) {
@@ -35,7 +37,7 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
             const chunk: undefined | string = data.choices[0].delta?.content;
             if (chunk) {
               // console.log(chunk);
-              emitter.emit(eventName, chunk.toString());
+              sendMessage(chunk.toString());
             }
           } catch (e) {
             console.log(`Error with JSON.parse and ${payload}.\n${e}`);
@@ -50,10 +52,10 @@ export async function chatGPT(gptMessages: ChatCompletionRequestMessage[]) {
 
     stream.on("error", (e: Error) => {
       console.log(e);
-      emitter.emit(eventName, JSON.stringify(e));
+      sendMessage(JSON.stringify(e));
     });
   } catch (e) {
     console.log(`Caught Error: ${e}`);
-    emitter.emit(eventName, JSON.stringify(e));
+    sendMessage(JSON.stringify(e));
   }
 }

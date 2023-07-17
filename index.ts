@@ -2,14 +2,17 @@ import dotenv from "dotenv";
 import axios from "axios";
 import WebSocket, { WebSocketServer } from "ws";
 import { chatGPT } from "./openai";
-import { emitter, eventName } from "./eventBus";
 import { ChatCompletionRequestMessage } from "openai/api";
 
 const wss = new WebSocketServer({ port: 3002 });
 wss.on("connection", (ws: WebSocket) => {
   // debug
   // ws.send("hello");
-  ws.on("error", console.error);
+
+  ws.on("error", (err) => {
+    console.log(err);
+    ws.send(JSON.stringify(err));
+  });
 
   setTimeout(() => {
     if (ws) {
@@ -20,22 +23,21 @@ wss.on("connection", (ws: WebSocket) => {
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
-      emitter.emit(eventName, "parse raw message failed");
+      ws.send("parse raw message failed");
       return;
     }
     console.log(
       `client: ${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
     ); // debug
-    await chatGPT(parsed.messages);
+    await chatGPT(parsed.messages, sendMessage);
   });
 
   function sendMessage(message: string) {
     ws.send(message);
   }
 
-  emitter.on(eventName, sendMessage);
   ws.on("close", () => {
-    emitter.removeListener(eventName, sendMessage);
+    console.log("successfully closed"); // debug
   });
 });
 
