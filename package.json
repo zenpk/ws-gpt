@@ -4,7 +4,9 @@
   "description": "Node server that recieve ChatGPT stream and forware with WebSocket",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node ."
+    "dev": "ts-node .",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "repository": {
     "type": "git",
