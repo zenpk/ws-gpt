@@ -13,7 +13,7 @@ wss.on("connection", (ws: WebSocket) => {
 
   setTimeout(() => {
     if (ws) {
-      ws.close(200, "closed because timeout");
+      ws.close(200, "closed due to timeout");
     }
   }, 180_000); // close in 3 minutes
 
