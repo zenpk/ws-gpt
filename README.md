@@ -1,2 +1,2 @@
 # ws-gpt
-Node server that recieve ChatGPT stream and forware with WebSocket
+Node server that recieve ChatGPT stream and forward with WebSocket
