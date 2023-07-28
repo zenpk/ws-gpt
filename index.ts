@@ -3,37 +3,35 @@ import axios from "axios";
 import WebSocket, { WebSocketServer } from "ws";
 import { chatGPT } from "./openai";
 import { ChatCompletionRequestMessage } from "openai/api";
+import { genResp } from "./utils";
 
 const wss = new WebSocketServer({ port: 3002 });
 wss.on("connection", (ws: WebSocket) => {
-  // debug
-  // ws.send("hello");
-
   ws.on("error", (err) => {
     console.log(err);
-    ws.send(JSON.stringify(err));
+    ws.send(genResp(false, JSON.stringify(err)));
   });
 
   setTimeout(() => {
     if (ws) {
-      ws.close(200, "closed due to timeout");
+      ws.close(200, genResp(false, "closed due to timeout"));
     }
   }, 180_000); // close in 3 minutes
 
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (!parsed.ok) {
-      ws.send("parse raw message failed");
+      ws.send(genResp(false, "parse raw message failed"));
       return;
     }
     console.log(
-      `client: ${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
+      `${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
     ); // debug
     await chatGPT(parsed.messages, ws);
   });
 
   ws.on("close", () => {
-    console.log("successfully closed"); // debug
+    // console.log("successfully closed"); // debug
   });
 });
 

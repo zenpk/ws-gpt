@@ -3,6 +3,7 @@ import { Configuration, OpenAIApi } from "openai";
 import { ChatCompletionRequestMessage } from "openai/api";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
+import { genResp } from "./utils";
 
 export async function chatGPT(
   gptMessages: ChatCompletionRequestMessage[],
@@ -29,7 +30,7 @@ export async function chatGPT(
       const payloads = chunk.toString().split("\n\n");
       for (const payload of payloads) {
         if (payload.endsWith("[DONE]")) {
-          ws.send("[DONE]");
+          ws.send(genResp(true, "[DONE]"));
           return;
         }
         if (payload.startsWith("data:")) {
@@ -38,10 +39,11 @@ export async function chatGPT(
             const chunk: undefined | string = data.choices[0].delta?.content;
             if (chunk) {
               // console.log(chunk);
-              ws.send(chunk.toString());
+              ws.send(genResp(true, chunk.toString()));
             }
           } catch (e) {
             console.log(`Error with JSON.parse and ${payload}.\n${e}`);
+            ws.send(genResp(false, "fatal error, please check server console"));
           }
         }
       }
@@ -53,10 +55,10 @@ export async function chatGPT(
 
     stream.on("error", (e: Error) => {
       console.log(e);
-      ws.send(JSON.stringify(e));
+      ws.send(genResp(false, JSON.stringify(e)));
     });
   } catch (e) {
     console.log(`Caught Error: ${e}`);
-    ws.send(JSON.stringify(e));
+    ws.send(genResp(false, JSON.stringify(e)));
   }
 }
