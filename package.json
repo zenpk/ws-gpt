@@ -1,7 +1,7 @@
 {
   "name": "ws-gpt",
   "version": "0.1.0",
-  "description": "Node server that recieve ChatGPT stream and forware with WebSocket",
+  "description": "Node server that receive ChatGPT stream and forward with WebSocket",
   "main": "index.ts",
   "scripts": {
     "dev": "ts-node .",
@@ -33,6 +33,7 @@
   "dependencies": {
     "axios": "^1.4.0",
     "dotenv": "^16.3.1",
+    "jose": "^4.14.6",
     "openai": "^3.3.0",
     "ws": "^8.13.0"
   }

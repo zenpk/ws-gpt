@@ -1,12 +1,13 @@
-export type Resp = {
-  ok: boolean;
-  msg: string;
-};
+import WebSocket from "ws";
 
-export function genResp(ok: boolean, msg: string) {
-  const resp: Resp = {
-    ok: ok,
-    msg: msg,
-  };
-  return JSON.stringify(resp);
+export enum Signals {
+  Done = "[FATGPT]-[DONE]",
+  Error = "[FATGPT]-[ERROR]",
+  TokenFailed = "[FATGPT]-[TOKEN]",
+  None = "",
+}
+
+export function sendError(info: string, e: any, ws: WebSocket) {
+  console.log(`${info}: ${e.toString()}`);
+  ws.send(`${info}, please retry.`);
 }

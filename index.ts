@@ -1,27 +1,30 @@
 import dotenv from "dotenv";
-import axios from "axios";
+import * as jose from "jose";
 import WebSocket, { WebSocketServer } from "ws";
 import { chatGPT } from "./openai";
 import { ChatCompletionRequestMessage } from "openai/api";
-import { genResp } from "./utils";
+import { sendError, Signals } from "./utils";
 
-const wss = new WebSocketServer({ port: 3002 });
+const port = 3002;
+const wss = new WebSocketServer({ port: port });
+console.log(`WebSocket Server listening on port ${port}`);
+
 wss.on("connection", (ws: WebSocket) => {
-  ws.on("error", (err) => {
-    console.log(err);
-    ws.send(genResp(false, JSON.stringify(err)));
+  ws.on("error", (e) => {
+    sendError("An error occurred during the WebSocket connection", e, ws);
+    ws.close(200, "closed due to error");
   });
 
   setTimeout(() => {
     if (ws) {
-      ws.close(200, genResp(false, "closed due to timeout"));
+      ws.close(200, "closed due to timeout");
     }
-  }, 180_000); // close in 3 minutes
+  }, 120_000); // close in 2 minutes
 
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
-    if (!parsed.ok) {
-      ws.send(genResp(false, "parse raw message failed"));
+    if (parsed.signal !== Signals.None) {
+      ws.send(parsed.signal);
       return;
     }
     console.log(
@@ -40,32 +43,43 @@ type RequestObject = {
   messages: ChatCompletionRequestMessage[];
 };
 
-type TokenResp = {
-  ok: boolean;
-  msg: string;
+type ParsedMessage = {
+  signal: Signals;
+  messages: ChatCompletionRequestMessage[];
 };
 
-type ParsedMessage = {
-  ok: boolean;
-  messages: ChatCompletionRequestMessage[];
+type PublicJwk = {
+  kty: string;
+  e: string;
+  use: string;
+  kid: string;
+  alg: string;
+  n: string;
 };
 
 async function parseMessages(raw: string) {
   dotenv.config();
+  const parsedMessage: ParsedMessage = { signal: Signals.None, messages: [] };
   try {
     const obj: RequestObject = JSON.parse(raw);
-    // simple-auth
-    const resp = await axios.post(`${process.env.URL}/token-check`, {
-      appId: process.env.APP_ID,
-      token: obj.token,
-    });
-    const respData = resp.data as TokenResp;
-    if (!respData.ok) {
-      return { ok: false, messages: [] };
+    const jwk: PublicJwk = JSON.parse(process.env.PUBLIC_KEY!);
+    try {
+      const publicKey = await jose.importJWK(jwk, "RS256");
+      const { payload, protectedHeader } = await jose.jwtVerify(
+        obj.token,
+        publicKey,
+        { issuer: "myoauth", audience: "fatgpt" },
+      );
+    } catch (errVerify) {
+      console.log(`JWT verify error: ${errVerify}`);
+      parsedMessage.signal = Signals.TokenFailed;
+      return parsedMessage;
     }
-    return { ok: true, messages: obj.messages };
-  } catch (e) {
-    console.log(e);
-    return { ok: false, messages: [] };
+    parsedMessage.messages = obj.messages;
+    return parsedMessage;
+  } catch (e: any) {
+    console.log(`parseMessage error: ${e}`);
+    parsedMessage.signal = Signals.Error;
+    return parsedMessage;
   }
 }

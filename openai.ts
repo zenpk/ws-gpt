@@ -3,7 +3,7 @@ import { Configuration, OpenAIApi } from "openai";
 import { ChatCompletionRequestMessage } from "openai/api";
 import { IncomingMessage } from "http";
 import WebSocket from "ws";
-import { genResp } from "./utils";
+import { sendError, Signals } from "./utils";
 
 export async function chatGPT(
   gptMessages: ChatCompletionRequestMessage[],
@@ -30,7 +30,7 @@ export async function chatGPT(
       const payloads = chunk.toString().split("\n\n");
       for (const payload of payloads) {
         if (payload.endsWith("[DONE]")) {
-          ws.send(genResp(true, "[DONE]"));
+          ws.send(Signals.Done);
           return;
         }
         if (payload.startsWith("data:")) {
@@ -38,27 +38,23 @@ export async function chatGPT(
             const data = JSON.parse(payload.replace("data: ", ""));
             const chunk: undefined | string = data.choices[0].delta?.content;
             if (chunk) {
-              // console.log(chunk);
-              ws.send(genResp(true, chunk.toString()));
+              ws.send(chunk.toString());
             }
-          } catch (e) {
-            console.log(`Error with JSON.parse and ${payload}.\n${e}`);
-            ws.send(genResp(false, "fatal error, please check server console"));
+          } catch (e: any) {
+            sendError("Parse result from OpenAI failed", e, ws);
           }
         }
       }
     });
 
     stream.on("end", () => {
-      // console.log("end");
+      // do nothing
     });
 
     stream.on("error", (e: Error) => {
-      console.log(e);
-      ws.send(genResp(false, JSON.stringify(e)));
+      sendError("An error occurred when communicating with OpenAI", e, ws);
     });
-  } catch (e) {
-    console.log(`Caught Error: ${e}`);
-    ws.send(genResp(false, JSON.stringify(e)));
+  } catch (e: any) {
+    sendError("An error occurred when sending the request to OpenAI", e, ws);
   }
 }
