@@ -35,6 +35,9 @@ wss.on("connection", (ws: WebSocket) => {
       if (parsed.signal === Signals.Error) {
         sendError(Signals.Error, "parse message failed", null, ws);
       }
+      if (parsed.signal === Signals.Test) {
+        ws.send(Signals.Test);
+      }
       return;
     }
     console.log(
