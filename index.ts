@@ -23,7 +23,7 @@ wss.on("connection", (ws: WebSocket) => {
 
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
-    if (parsed.signal !== Signals.None) {
+    if (parsed.signal !== Signals.Pass) {
       ws.send(parsed.signal);
       return;
     }
@@ -38,9 +38,10 @@ wss.on("connection", (ws: WebSocket) => {
   });
 });
 
-type RequestObject = {
+type RequestMessage = {
   token: string;
   messages: ChatCompletionRequestMessage[];
+  test?: boolean;
 };
 
 type ParsedMessage = {
@@ -59,9 +60,9 @@ type PublicJwk = {
 
 async function parseMessages(raw: string) {
   dotenv.config();
-  const parsedMessage: ParsedMessage = { signal: Signals.None, messages: [] };
+  const parsedMessage: ParsedMessage = { signal: Signals.Pass, messages: [] };
   try {
-    const obj: RequestObject = JSON.parse(raw);
+    const obj: RequestMessage = JSON.parse(raw);
     const jwk: PublicJwk = JSON.parse(process.env.PUBLIC_KEY!);
     try {
       const publicKey = await jose.importJWK(jwk, "RS256");
@@ -76,6 +77,10 @@ async function parseMessages(raw: string) {
       return parsedMessage;
     }
     parsedMessage.messages = obj.messages;
+    // test message (for token check purpose)
+    if (obj.test) {
+      parsedMessage.signal = Signals.Test;
+    }
     return parsedMessage;
   } catch (e: any) {
     console.log(`parseMessage error: ${e}`);
