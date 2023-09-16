@@ -12,7 +12,12 @@ export enum Signals {
   Pass = "[FATGPT]-[PASS]", // pass the parse message process
 }
 
-export function sendError(info: string, e: any, ws: WebSocket) {
-  console.log(`${info}: ${e.toString()}`);
-  ws.send(`${info}, please retry.`);
+export function sendError(
+  signal: Signals,
+  info: string,
+  e: any,
+  ws: WebSocket,
+) {
+  console.log(`${info}: ${e ? e.toString() : ""}`);
+  ws.send(`${signal}${info}, please retry.`);
 }

@@ -11,7 +11,12 @@ console.log(`WebSocket Server listening on port ${port}`);
 
 wss.on("connection", (ws: WebSocket) => {
   ws.on("error", (e) => {
-    sendError("An error occurred during the WebSocket connection", e, ws);
+    sendError(
+      Signals.Error,
+      "An error occurred during the WebSocket connection",
+      e,
+      ws,
+    );
     ws.close(200, "closed due to error");
   });
 
@@ -24,7 +29,12 @@ wss.on("connection", (ws: WebSocket) => {
   ws.on("message", async (data) => {
     const parsed: ParsedMessage = await parseMessages(data.toString());
     if (parsed.signal !== Signals.Pass) {
-      ws.send(parsed.signal);
+      if (parsed.signal === Signals.TokenFailed) {
+        sendError(Signals.TokenFailed, "", null, ws);
+      }
+      if (parsed.signal === Signals.Error) {
+        sendError(Signals.Error, "parse message failed", null, ws);
+      }
       return;
     }
     console.log(
