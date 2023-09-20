@@ -41,7 +41,9 @@ wss.on("connection", (ws: WebSocket) => {
       return;
     }
     console.log(
-      `${JSON.stringify(parsed.messages[parsed.messages.length - 1])}`,
+      `${parsed.payload}: ${
+        parsed.messages[parsed.messages.length - 1].content
+      }`,
     ); // debug
     await chatGPT(parsed.messages, ws);
   });
@@ -60,6 +62,7 @@ type RequestMessage = {
 type ParsedMessage = {
   signal: Signals;
   messages: ChatCompletionRequestMessage[];
+  payload?: jose.JWTPayload;
 };
 
 type PublicJwk = {
@@ -79,11 +82,11 @@ async function parseMessages(raw: string) {
     const jwk: PublicJwk = JSON.parse(process.env.PUBLIC_KEY!);
     try {
       const publicKey = await jose.importJWK(jwk, "RS256");
-      const { payload, protectedHeader } = await jose.jwtVerify(
-        obj.token,
-        publicKey,
-        { issuer: "myoauth", audience: "fatgpt" },
-      );
+      const { payload } = await jose.jwtVerify(obj.token, publicKey, {
+        issuer: "myoauth",
+        audience: "fatgpt",
+      });
+      parsedMessage.payload = payload;
     } catch (errVerify) {
       console.log(`JWT verify error: ${errVerify}`);
       parsedMessage.signal = Signals.TokenFailed;
