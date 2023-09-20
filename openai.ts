@@ -41,7 +41,7 @@ export async function chatGPT(
               ws.send(chunk.toString());
             }
           } catch (e: any) {
-            sendError("Parse result from OpenAI failed", e, ws);
+            sendError(Signals.Error, "Parse result from OpenAI failed", e, ws);
           }
         }
       }
@@ -52,9 +52,19 @@ export async function chatGPT(
     });
 
     stream.on("error", (e: Error) => {
-      sendError("An error occurred when communicating with OpenAI", e, ws);
+      sendError(
+        Signals.Error,
+        "An error occurred when communicating with OpenAI",
+        e,
+        ws,
+      );
     });
   } catch (e: any) {
-    sendError("An error occurred when sending the request to OpenAI", e, ws);
+    sendError(
+      Signals.Error,
+      "An error occurred when sending the request to OpenAI",
+      e,
+      ws,
+    );
   }
 }
