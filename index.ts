@@ -40,11 +40,7 @@ wss.on("connection", (ws: WebSocket) => {
       }
       return;
     }
-    console.log(
-      `${JSON.stringify(parsed.payload)}: ${parsed.messages[
-        parsed.messages.length - 1
-      ]?.content}`,
-    ); // debug
+    logInfo(parsed);
     await chatGPT(parsed.messages, ws);
   });
 
@@ -103,4 +99,21 @@ async function parseMessages(raw: string) {
     parsedMessage.signal = Signals.Error;
     return parsedMessage;
   }
+}
+
+function logInfo(parsed: ParsedMessage) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const username = parsed.payload?.username ?? "";
+  console.log(
+    `[${formattedDate}] [${username}]: ${parsed.messages[
+      parsed.messages.length - 1
+    ]?.content}`,
+  );
 }
