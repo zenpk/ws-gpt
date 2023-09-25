@@ -41,9 +41,9 @@ wss.on("connection", (ws: WebSocket) => {
       return;
     }
     console.log(
-      `${parsed.payload}: ${
-        parsed.messages[parsed.messages.length - 1].content
-      }`,
+      `${JSON.stringify(parsed.payload)}: ${parsed.messages[
+        parsed.messages.length - 1
+      ]?.content}`,
     ); // debug
     await chatGPT(parsed.messages, ws);
   });
