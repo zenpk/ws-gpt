@@ -52,6 +52,7 @@ export async function chatGPT(
     });
 
     stream.on("error", (e: Error) => {
+      console.log(e);
       sendError(
         Signals.Error,
         "An error occurred when communicating with OpenAI",
@@ -60,6 +61,7 @@ export async function chatGPT(
       );
     });
   } catch (e: any) {
+    console.log(e);
     sendError(
       Signals.Error,
       "An error occurred when sending the request to OpenAI",
