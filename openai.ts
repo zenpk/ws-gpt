@@ -15,10 +15,18 @@ export async function chatGPT(
     apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
+  gptMessages = [
+    {
+      role: "system",
+      content:
+        "You are a helpful assistant who understands multiple languages.",
+    },
+    ...gptMessages,
+  ];
   try {
     const completion = await openai.createChatCompletion(
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: gptMessages,
         stream: true,
       },
@@ -41,7 +49,8 @@ export async function chatGPT(
               ws.send(chunk.toString());
             }
           } catch (e: any) {
-            sendError(Signals.Error, "Parse result from OpenAI failed", e, ws);
+            // sendError(Signals.Error, "Parse result from OpenAI failed", e, ws);
+            console.log(e); // sometimes openai sends bad data, just ignore it
           }
         }
       }
