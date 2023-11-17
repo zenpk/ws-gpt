@@ -28,7 +28,7 @@ export async function chatGPT(
   try {
     const completion = await openai.createChatCompletion(
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: gptMessages,
         stream: true,
       },
@@ -48,13 +48,13 @@ export async function chatGPT(
           continue;
         }
         // issue #1
-        //         if (leftOver.length > 0) {
-        //           payload = leftOver + payload;
-        //           leftOver = "";
-        //         }
-        //         if (!payload.startsWith(DATA_PREFIX)) {
-        //           continue;
-        //         }
+        if (leftOver.length > 0) {
+          payload = leftOver + payload;
+          leftOver = "";
+        }
+        if (!payload.startsWith(DATA_PREFIX)) {
+          continue;
+        }
         try {
           const data = JSON.parse(payload.replace(DATA_PREFIX, ""));
           const chunk: undefined | string = data.choices[0].delta?.content;
@@ -71,7 +71,11 @@ export async function chatGPT(
     });
 
     stream.on("end", () => {
-      // do nothing
+      if (leftOver.length !== 0) {
+        console.log(
+          `something went wrong causing leftover not consumed: ${leftOver}`,
+        );
+      }
     });
 
     stream.on("error", (e: Error) => {
