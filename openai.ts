@@ -17,18 +17,15 @@ export async function chatGPT(
     apiKey: process.env.OPENAI_API_KEY,
   });
   const openai = new OpenAIApi(configuration);
-  gptMessages = [
-    {
-      role: "system",
-      content:
-        "You are a helpful assistant who understands multiple languages.",
-    },
-    ...gptMessages,
-  ];
+  const identity = {
+    role: "system",
+    content: "You are a helpful assistant who understands multiple languages.",
+  };
+  gptMessages = [...gptMessages];
   try {
     const completion = await openai.createChatCompletion(
       {
-        model: "gpt-4",
+        model: "gpt-4-1106-preview",
         messages: gptMessages,
         stream: true,
       },
@@ -40,6 +37,7 @@ export async function chatGPT(
     stream.on("data", (chunk: Buffer) => {
       const payloads = chunk.toString().split("\n\n");
       for (let payload of payloads) {
+        // console.log(payload);
         if (payload.endsWith("[DONE]")) {
           ws.send(Signals.Done);
           return;
