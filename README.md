@@ -1,3 +1,3 @@
 # ws-gpt
 
-Node server that recieve ChatGPT stream and forward with WebSocket
+This is for https://github.com/zenpk/fatgpt
