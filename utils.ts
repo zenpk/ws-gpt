@@ -1,4 +1,6 @@
 import WebSocket from "ws";
+import { ChatCompletionRequestMessage } from "openai/api";
+import * as jose from "jose";
 
 export enum Signals {
   // client side
@@ -20,4 +22,27 @@ export function sendError(
 ) {
   console.log(`${info}: ${e ? e.toString() : ""}`);
   ws.send(`${signal}${info}, please retry.`);
+}
+
+export type ParsedMessage = {
+  signal: Signals;
+  messages: ChatCompletionRequestMessage[];
+  payload?: jose.JWTPayload;
+};
+
+export function logInfo(parsed: ParsedMessage) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  const username = parsed.payload?.username ?? "";
+  console.log(
+    `[${formattedDate}] [${username}]: ${parsed.messages[
+      parsed.messages.length - 1
+    ]?.content}`,
+  );
 }
