@@ -4,6 +4,7 @@ import WebSocket, { WebSocketServer } from "ws";
 import { chatGPT } from "./openai";
 import { ChatCompletionRequestMessage } from "openai/api";
 import { logInfo, ParsedMessage, sendError, Signals } from "./utils";
+import { Guest } from "./guest";
 
 const port = 3002;
 const wss = new WebSocketServer({ port: port });

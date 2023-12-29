@@ -1,4 +1,4 @@
-class Guest {
+export class Guest {
   private readonly date: number;
   private readonly quota: number;
   private leftOver: number;
