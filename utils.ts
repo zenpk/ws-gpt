@@ -3,14 +3,15 @@ import { ChatCompletionRequestMessage } from "openai/api";
 import * as jose from "jose";
 
 export enum Signals {
-  // client side
+  // client send
   Test = "[FATGPT]-[TEST]", // test if token is expired. This exists because it can help
   // prevent losing user input by checking token right after the user lands the home page
 
-  // server side
+  // server send
   Error = "[FATGPT]-[ERROR]",
   Done = "[FATGPT]-[DONE]", // get [DONE] from OpenAI
   TokenFailed = "[FATGPT]-[TOKEN]", // token verification failed in parse message process
+  GuestQuotaExceeded = "[FATGPT]-[GUESTQUOTA]",
   Pass = "[FATGPT]-[PASS]", // pass the parse message process
 }
 

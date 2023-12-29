@@ -7,6 +7,7 @@ import { logInfo, ParsedMessage, sendError, Signals } from "./utils";
 
 const port = 3002;
 const wss = new WebSocketServer({ port: port });
+const guest = new Guest(5);
 console.log(`WebSocket Server listening on port ${port}`);
 
 wss.on("connection", (ws: WebSocket) => {
@@ -37,6 +38,9 @@ wss.on("connection", (ws: WebSocket) => {
       }
       if (parsed.signal === Signals.Test) {
         ws.send(Signals.Test);
+      }
+      if (parsed.signal === Signals.GuestQuotaExceeded) {
+        sendError(Signals.GuestQuotaExceeded, "guest quota exceeded", null, ws);
       }
       return;
     }
@@ -77,6 +81,10 @@ async function parseMessages(raw: string) {
         issuer: "myoauth",
         audience: "fatgpt",
       });
+      if (payload.username === "guest" && !guest.reduceLeftOver()) {
+        parsedMessage.signal = Signals.GuestQuotaExceeded;
+        return parsedMessage;
+      }
       parsedMessage.payload = payload;
     } catch (errVerify) {
       console.log(`JWT verify error: ${errVerify}`);
