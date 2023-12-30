@@ -23,7 +23,7 @@ export class Guest {
 
   private localeDate() {
     const date = new Date();
-    date.setUTCHours(date.getUTCHours() + 8);
+    date.setHours(date.getUTCHours() + 8);
     return date.getDate();
   }
 }
