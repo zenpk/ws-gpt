@@ -1,5 +1,5 @@
 export class Guest {
-  private readonly date: number;
+  private date: number;
   private readonly quota: number;
   private leftOver: number;
 
@@ -12,6 +12,7 @@ export class Guest {
   public reduceLeftOver(): boolean {
     const nowDate = this.localeDate();
     if (nowDate !== this.date) {
+      this.date = nowDate;
       this.leftOver = this.quota;
     }
     if (this.leftOver > 0) {
