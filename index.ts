@@ -45,7 +45,7 @@ wss.on("connection", (ws: WebSocket) => {
       }
       return;
     }
-    logInfo(parsed);
+    // logInfo(parsed); // only for debugging
     await chatGPT(parsed.messages, ws);
   });
 
