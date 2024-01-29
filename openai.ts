@@ -25,7 +25,7 @@ export async function chatGPT(
   try {
     const completion = await openai.createChatCompletion(
       {
-        model: "gpt-4-1106-preview",
+        model: "gpt-4-turbo-preview",
         messages: gptMessages,
         stream: true,
       },
