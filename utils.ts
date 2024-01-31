@@ -66,6 +66,7 @@ export class RobustHandler {
     this.mutex++;
     const index1 = this.buff.indexOf(this.splitter);
     if (index1 == -1) {
+      this.mutex--;
       return false;
     }
     const index2 = this.buff.indexOf(
@@ -77,8 +78,10 @@ export class RobustHandler {
       if (this.buff.includes(this.done)) {
         this.payload = this.done;
         this.buff = "";
+        this.mutex--;
         return true;
       }
+      this.mutex--;
       return false;
     }
     this.payload = this.buff.slice(index1 + this.splitter.length - 1, index2);
