@@ -68,7 +68,10 @@ export class RobustHandler {
     if (index1 == -1) {
       return false;
     }
-    const index2 = this.buff.indexOf(this.done, index1 + this.splitter.length);
+    const index2 = this.buff.indexOf(
+      this.splitter,
+      index1 + this.splitter.length,
+    );
     if (index2 == -1) {
       // check if is DONE
       if (this.buff.includes(this.done)) {

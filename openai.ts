@@ -5,8 +5,6 @@ import { IncomingMessage } from "http";
 import WebSocket from "ws";
 import { RobustHandler, sendError, Signals } from "./utils";
 
-const DATA_PREFIX = "data: ";
-
 export async function chatGPT(
   gptMessages: ChatCompletionRequestMessage[],
   ws: WebSocket,
@@ -46,14 +44,8 @@ export async function chatGPT(
           ws.send(Signals.Done);
           return;
         }
-        if (payload.length <= 0) {
-          continue;
-        }
-        if (!payload.startsWith(DATA_PREFIX)) {
-          continue;
-        }
         try {
-          const data = JSON.parse(payload.replace(DATA_PREFIX, ""));
+          const data = JSON.parse(payload);
           const chunk: undefined | string = data.choices[0].delta?.content;
           if (chunk) {
             ws.send(chunk.toString());
