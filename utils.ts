@@ -47,3 +47,50 @@ export function logInfo(parsed: ParsedMessage) {
     ]?.content}`,
   );
 }
+
+export class RobustHandler {
+  private splitter = "data: {";
+  private done = "[DONE]";
+  private buff = "";
+  private payload = "";
+  private mutex = 0;
+
+  public readChunk(chunk: Buffer) {
+    this.buff += chunk.toString();
+  }
+
+  public preparePayload() {
+    while (this.mutex > 0) {
+      // block
+    }
+    this.mutex++;
+    const index1 = this.buff.indexOf(this.splitter);
+    if (index1 == -1) {
+      return false;
+    }
+    const index2 = this.buff.indexOf(this.done, index1 + this.splitter.length);
+    if (index2 == -1) {
+      // check if is DONE
+      if (this.buff.includes(this.done)) {
+        this.payload = this.done;
+        this.buff = "";
+        return true;
+      }
+    }
+    this.payload = this.buff.slice(index1 + this.splitter.length - 1, index2);
+    this.buff = this.buff.slice(index2);
+    this.mutex--;
+    return true;
+  }
+
+  public readPayload() {
+    while (this.mutex > 0) {
+      // block
+    }
+    this.mutex++;
+    const payload = this.payload;
+    this.payload = "";
+    this.mutex--;
+    return payload;
+  }
+}
