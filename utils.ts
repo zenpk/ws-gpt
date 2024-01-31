@@ -79,6 +79,7 @@ export class RobustHandler {
         this.buff = "";
         return true;
       }
+      return false;
     }
     this.payload = this.buff.slice(index1 + this.splitter.length - 1, index2);
     this.buff = this.buff.slice(index2);
