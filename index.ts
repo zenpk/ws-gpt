@@ -80,15 +80,16 @@ async function parseMessages(raw: string) {
       const publicKey = await jose.importJWK(jwk, "RS256");
       const { payload } = await jose.jwtVerify(obj.token, publicKey, {
         issuer: "myoauth",
-        audience: "fatgpt",
       });
       if (payload.username === "guest" && !guest.reduceLeftOver()) {
         parsedMessage.signal = Signals.GuestQuotaExceeded;
         return parsedMessage;
       }
       parsedMessage.payload = payload;
-    } catch (errVerify) {
-      console.log(`JWT verify error: ${errVerify}`);
+    } catch (errVerify: any) {
+      console.log(
+        `JWT verify error: ${errVerify.toString().replace(/\n/g, "")}`,
+      );
       parsedMessage.signal = Signals.TokenFailed;
       return parsedMessage;
     }
