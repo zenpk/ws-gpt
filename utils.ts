@@ -21,7 +21,9 @@ export function sendError(
   e: any,
   ws: WebSocket,
 ) {
-  console.log(`${info}: ${e ? e.toString() : ""}`);
+  if (info) {
+    console.log(`${info}: ${e ? e.toString() : ""}`);
+  }
   ws.send(`${signal}${info}, please retry.`);
 }
 
