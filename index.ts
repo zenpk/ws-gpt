@@ -81,6 +81,9 @@ async function parseMessages(raw: string) {
       const { payload } = await jose.jwtVerify(obj.token, publicKey, {
         issuer: "myoauth",
       });
+      if (payload.clientId !== "fatgpt") {
+        throw new Error(`wrong client id: ${payload.clientId}`);
+      }
       if (payload.username === "guest" && !guest.reduceLeftOver()) {
         parsedMessage.signal = Signals.GuestQuotaExceeded;
         return parsedMessage;
